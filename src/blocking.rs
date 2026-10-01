@@ -1,8 +1,8 @@
 //! A synchronous client, enabled by the `blocking` feature.
 //!
 //! [`Client`] wraps the async [`crate::Client`] and drives it on its own
-//! single-threaded Tokio runtime. Do not call it from inside an async runtime:
-//! Tokio panics when a runtime is started or dropped there. Use the async
+//! single-threaded Tokio runtime. Do not call it from inside an async runtime,
+//! because Tokio panics when a runtime starts or drops there. Use the async
 //! client in async code.
 //!
 //! ```no_run

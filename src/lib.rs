@@ -54,9 +54,9 @@
 //!
 //! Every method returns [`Error`]. A non-success HTTP response becomes
 //! [`Error::Api`], which carries an [`ApiError`] with the status, error code,
-//! message, hint, documentation URL, and the decoded response body. Both the
-//! JSON error envelope and the `application/problem+json` documents returned by
-//! profile-insight requests are decoded.
+//! message, hint, documentation URL, and the decoded response body. The client
+//! decodes both the JSON error envelope and the `application/problem+json`
+//! documents that profile-insight requests return.
 //!
 //! ```no_run
 //! # async fn run() {

@@ -52,13 +52,13 @@ async fn main() -> Result<(), sudhanva::Error> {
 Profile-insight requests require a caller-controlled idempotency key, sent as the
 `Idempotency-Key` header. Replaying the same key and request within 24 hours returns the same job.
 
-Methods return typed structs. Missing fields take default values and unknown fields are ignored, so
-additive API changes do not break decoding. Batch result bodies and extra NLWeb result properties
-are available as raw `serde_json::Value`.
+Methods return typed structs. A missing field takes its default value and the client skips unknown
+fields, so a new field in an API response does not break decoding. Batch result bodies and extra
+NLWeb result properties stay available as raw `serde_json::Value`.
 
 Non-success responses return `sudhanva::Error::Api` with an `ApiError` holding `status`, `code`,
-`message`, `hint`, `docs_url`, and the decoded response `body`. Both the JSON error envelope and
-the `application/problem+json` documents returned by profile-insight requests are decoded:
+`message`, `hint`, `docs_url`, and the decoded response `body`. The client decodes both the JSON
+error envelope and the `application/problem+json` documents that profile-insight requests return:
 
 ```rust
 match client.post("missing").await {
@@ -105,15 +105,16 @@ The client follows the stable `/api/v1` contract. See the
 
 ## Dependencies and Rust version
 
-- `reqwest` with only the `json` and `rustls` features: HTTP with rustls TLS, no OpenSSL
-- `serde` and `serde_json`: typed request and response bodies
-- `thiserror`: the `Error` and `ApiError` types
-- `tokio` with only the `time` feature: the polling delay in `wait_for_profile_insight` (the
-  `blocking` feature adds `rt`)
+- `reqwest`, with only the `json` and `rustls` features, sends requests over rustls TLS, so the crate
+  does not link OpenSSL.
+- `serde` and `serde_json` encode request bodies and decode responses into typed structs.
+- `thiserror` derives the `Error` and `ApiError` types.
+- `tokio`, with only the `time` feature, provides the polling delay in `wait_for_profile_insight`.
+  The `blocking` feature adds `rt`.
 
 The minimum supported Rust version is 1.85, the first release with the 2024 edition. CI tests it
-alongside the latest stable release. `Cargo.lock` is committed so CI builds are reproducible; it does
-not affect projects that depend on this crate.
+alongside the latest stable release. The repository commits `Cargo.lock` so CI builds the same
+dependency versions on every run. Cargo ignores it in projects that depend on this crate.
 
 ## Development
 

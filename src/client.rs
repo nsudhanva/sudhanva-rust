@@ -18,7 +18,7 @@ const MAX_RESPONSE_BYTES: usize = 2 << 20;
 
 /// An async client for every stable public API operation.
 ///
-/// `Client` is cheap to clone: clones share one connection pool.
+/// Cloning a `Client` is cheap because clones share one connection pool.
 ///
 /// ```no_run
 /// # async fn run() -> Result<(), sudhanva::Error> {
