@@ -1,7 +1,7 @@
 //! Request and response types.
 //!
 //! In response types, a missing field takes its default value and an unknown
-//! field is skipped, so a new field in an API response does not break
+//! field is skipped, so fields added to an API response do not break
 //! deserialization.
 
 use serde::de::DeserializeOwned;

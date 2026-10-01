@@ -53,7 +53,7 @@ Profile-insight requests require a caller-controlled idempotency key, sent as th
 `Idempotency-Key` header. Replaying the same key and request within 24 hours returns the same job.
 
 Methods return typed structs. A missing field takes its default value and the client skips unknown
-fields, so a new field in an API response does not break decoding. Batch result bodies and extra
+fields, so fields added to an API response do not break decoding. Batch result bodies and extra
 NLWeb result properties stay available as raw `serde_json::Value`.
 
 Non-success responses return `sudhanva::Error::Api` with an `ApiError` holding `status`, `code`,
