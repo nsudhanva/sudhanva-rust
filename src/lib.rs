@@ -73,7 +73,7 @@
 //!
 //! # Features
 //!
-//! - `blocking`: adds [`blocking::Client`], a synchronous client that runs the
+//! - `blocking`: adds `blocking::Client`, a synchronous client that runs the
 //!   async client on its own single-threaded Tokio runtime.
 //!
 //! TLS uses rustls, so the crate does not link OpenSSL.
