@@ -177,7 +177,9 @@ impl ApiError {
                 .filter(|value| value.is_object())
                 .unwrap_or(&body);
             error.code = text(envelope, "code").unwrap_or_default();
-            error.message = text(envelope, "message").unwrap_or_default();
+            error.message = text(envelope, "message")
+                .or_else(|| body.get("error").and_then(Value::as_str).map(str::to_owned))
+                .unwrap_or_default();
             error.hint = text(envelope, "hint");
             error.docs_url = text(envelope, "docs_url");
         }
@@ -270,6 +272,40 @@ mod tests {
         let empty = ApiError::from_response(599, None, b"");
         assert_eq!(empty.message, "request failed");
         assert_eq!(empty.body, Value::Null);
+    }
+
+    #[test]
+    fn tolerates_odd_bodies() {
+        let string_error = ApiError::from_response(500, None, br#"{"error":"boom"}"#);
+        assert_eq!(string_error.code, "api_error");
+        assert_eq!(string_error.message, "boom");
+
+        let array = ApiError::from_response(400, Some("application/json".into()), b"[1,2]");
+        assert_eq!(array.code, "api_error");
+        assert_eq!(array.message, "Bad Request");
+        assert_eq!(array.body, serde_json::json!([1, 2]));
+
+        let string = ApiError::from_response(503, None, br#""down""#);
+        assert_eq!(string.message, "Service Unavailable");
+
+        let numbers = ApiError::from_response(418, None, br#"{"code":7,"error":{"code":null}}"#);
+        assert_eq!(numbers.code, "api_error");
+
+        let problem_without_fragment = ApiError::from_response(
+            400,
+            Some("application/problem+json".into()),
+            br#"{"type":"about:blank","title":"Bad thing","status":400}"#,
+        );
+        assert_eq!(problem_without_fragment.code, "api_error");
+        assert_eq!(problem_without_fragment.message, "Bad thing");
+        assert_eq!(problem_without_fragment.docs_url, None);
+
+        let problem_not_json =
+            ApiError::from_response(400, Some("application/problem+json".into()), b"oops");
+        assert_eq!(problem_not_json.message, "Bad Request");
+
+        let invalid_utf8 = ApiError::from_response(500, None, &[0xff, 0xfe]);
+        assert_eq!(invalid_utf8.code, "api_error");
     }
 
     #[test]
