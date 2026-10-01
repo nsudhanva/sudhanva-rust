@@ -27,7 +27,7 @@ fn crate_version_matches_the_sdk_version() {
 fn readme_installs_the_current_release() {
     let readme = include_str!("../README.md");
     assert!(
-        readme.contains(&format!("--tag v{VERSION}")),
-        "README.md should install tag v{VERSION}"
+        readme.contains(&format!("cargo add sudhanva@{VERSION}")),
+        "README.md should install version {VERSION}"
     );
 }

@@ -8,17 +8,17 @@ The API is public and requires no credentials. Do not send private data.
 
 ## Install
 
-The crate is not on crates.io yet. Install it from this repository at a release tag:
+Install it from [crates.io](https://crates.io/crates/sudhanva):
 
 ```bash
-cargo add sudhanva --git https://github.com/nsudhanva/sudhanva-rust --tag v0.1.0
+cargo add sudhanva@0.1.0
 ```
 
 Or add it to `Cargo.toml`:
 
 ```toml
 [dependencies]
-sudhanva = { git = "https://github.com/nsudhanva/sudhanva-rust", tag = "v0.1.0" }
+sudhanva = "0.1.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
