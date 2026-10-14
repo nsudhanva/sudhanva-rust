@@ -1,10 +1,11 @@
 # sudhanva for Rust
 
-Minimal async Rust client for the public [sudhanva.me API](https://sudhanva.me/openapi.json). It
-retrieves published profile and article metadata, performs bounded batch reads, searches the
-published site, and creates or polls temporary profile-insight jobs.
+This is a small async Rust client for the public [sudhanva.me API](https://sudhanva.me/openapi.json).
+Use it to get the published profile and article metadata, to read items in batches of a limited
+size, and to search the published site. You can also use it to create and poll temporary
+profile-insight jobs.
 
-The API is public and requires no credentials. Do not send private data.
+The API is public. It does not need credentials. Do not send private data to it.
 
 ## Install
 
@@ -14,7 +15,7 @@ Install it from [crates.io](https://crates.io/crates/sudhanva):
 cargo add sudhanva@0.1.0
 ```
 
-Or add it to `Cargo.toml`:
+You can also add it to `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -22,7 +23,7 @@ sudhanva = "0.1.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
-The client is async and runs on Tokio. Enable the `blocking` feature for a synchronous client.
+The client is async and runs on Tokio. To get a synchronous client, enable the `blocking` feature.
 
 ## Use
 
@@ -49,16 +50,19 @@ async fn main() -> Result<(), sudhanva::Error> {
 }
 ```
 
-Profile-insight requests require a caller-controlled idempotency key, sent as the
-`Idempotency-Key` header. Replaying the same key and request within 24 hours returns the same job.
+Each profile-insight request must have an idempotency key. The caller controls this key, and the
+client sends it in the `Idempotency-Key` header. If you send the same key and request again within
+24 hours, the API returns the same job.
 
-Methods return typed structs. A missing field takes its default value and the client skips unknown
-fields, so fields added to an API response do not break decoding. Batch result bodies and extra
-NLWeb result properties stay available as raw `serde_json::Value`.
+Methods return typed structs. If a field is missing, the struct uses the default value for that
+field. The client ignores unknown fields. Thus, new fields in an API response do not cause decode
+errors. Batch result bodies and extra NLWeb result properties stay available as raw
+`serde_json::Value`.
 
-Non-success responses return `sudhanva::Error::Api` with an `ApiError` holding `status`, `code`,
-`message`, `hint`, `docs_url`, and the decoded response `body`. The client decodes both the JSON
-error envelope and the `application/problem+json` documents that profile-insight requests return:
+If a response is not a success, the client returns `sudhanva::Error::Api`. This error contains an
+`ApiError` with the fields `status`, `code`, `message`, `hint`, `docs_url`, and the decoded response
+`body`. The client decodes the JSON error envelope. It also decodes the `application/problem+json`
+documents that profile-insight requests return. For example:
 
 ```rust
 match client.post("missing").await {
@@ -68,7 +72,7 @@ match client.post("missing").await {
 }
 ```
 
-To read every post, follow `next_cursor`:
+To read all posts, use `next_cursor` to get the next page:
 
 ```rust
 let mut options = PostsOptions::new().limit(50);
@@ -84,8 +88,8 @@ loop {
 }
 ```
 
-Use `Client::builder()` to set the base URL, the per-request timeout (10 seconds by default), or
-your own `reqwest::Client`. Every request sends `User-Agent: sudhanva-rust/0.1.0`.
+Use `Client::builder()` to set the base URL, the timeout for each request (default 10 seconds), or
+your own `reqwest::Client`. Each request sends `User-Agent: sudhanva-rust/0.1.0`.
 
 ## API coverage
 
@@ -99,22 +103,24 @@ your own `reqwest::Client`. Every request sends `User-Agent: sudhanva-rust/0.1.0
 | `GET /profile-insights/{job_id}`  | `profile_insight()` and `wait_for_profile_insight()`                |
 | `POST /ask`                       | `ask()` for NLWeb conversational search                             |
 
-The client follows the stable `/api/v1` contract. See the
-[developer documentation](https://sudhanva.me/developers/sdks/) and
+The client uses the stable `/api/v1` contract. For more information, read the
+[developer documentation](https://sudhanva.me/developers/sdks/) and the
 [versioning policy](https://sudhanva.me/developers/versioning/).
 
 ## Dependencies and Rust version
 
-- `reqwest`, with only the `json` and `rustls` features, sends requests over rustls TLS, so the crate
-  does not link OpenSSL.
+- `reqwest` sends requests over rustls TLS. It uses only the `json` and `rustls` features. Thus, the
+  crate does not link OpenSSL.
 - `serde` and `serde_json` encode request bodies and decode responses into typed structs.
 - `thiserror` derives the `Error` and `ApiError` types.
-- `tokio`, with only the `time` feature, provides the polling delay in `wait_for_profile_insight`.
-  The `blocking` feature adds `rt`.
+- `tokio` gives the delay between polls in `wait_for_profile_insight`. It uses only the `time`
+  feature. The `blocking` feature adds `rt`.
 
-The minimum supported Rust version is 1.85, the first release with the 2024 edition. CI tests it
-alongside the latest stable release. The repository commits `Cargo.lock` so CI builds the same
-dependency versions on every run. Cargo ignores it in projects that depend on this crate.
+The minimum supported Rust version is 1.85. This is the first release with the 2024 edition. CI
+tests this version and the latest stable release.
+
+The repository contains `Cargo.lock`, so CI builds the same dependency versions on each run. Cargo
+ignores `Cargo.lock` in projects that depend on this crate.
 
 ## Development
 
@@ -125,8 +131,10 @@ cargo test --all-features
 cargo doc --no-deps --all-features
 ```
 
-The default test suite uses a local mock server and never calls production. A smoke test against
-production is ignored by default:
+The default test suite uses a local mock server. It does not call production.
+
+A smoke test against production is also available. It does not run by default. To run it, use this
+command:
 
 ```bash
 cargo test --all-features --test live -- --ignored

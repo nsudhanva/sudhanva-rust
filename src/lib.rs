@@ -1,10 +1,12 @@
 //! Client for the public [sudhanva.me API](https://sudhanva.me/openapi.json).
 //!
-//! It retrieves published profile and article metadata, performs bounded batch
-//! reads, searches the published site, and creates or polls temporary
-//! profile-insight jobs. It follows the stable `/api/v1` contract.
+//! Use it to get the published profile and article metadata, to read items in
+//! batches of a limited size, and to search the published site. You can also
+//! use it to create and poll temporary profile-insight jobs. The client uses
+//! the stable `/api/v1` contract.
 //!
-//! The API is public and requires no credentials. Do not send private data.
+//! The API is public. It does not need credentials. Do not send private data
+//! to it.
 //!
 //! # Example
 //!
@@ -31,9 +33,9 @@
 //!
 //! # Profile insights
 //!
-//! Creating a profile-insight job requires a caller-controlled idempotency key.
-//! Replaying the same key with the same request within 24 hours returns the
-//! same job.
+//! Each profile-insight job must have an idempotency key. The caller controls
+//! this key. If you send the same key with the same request again within 24
+//! hours, the API returns the same job.
 //!
 //! ```no_run
 //! use sudhanva::{Client, ProfileInsightRequest, WaitOptions};
@@ -52,11 +54,12 @@
 //!
 //! # Errors
 //!
-//! Every method returns [`Error`]. A non-success HTTP response becomes
-//! [`Error::Api`], which carries an [`ApiError`] with the status, error code,
-//! message, hint, documentation URL, and the decoded response body. The client
-//! decodes both the JSON error envelope and the `application/problem+json`
-//! documents that profile-insight requests return.
+//! Each method returns [`Error`]. If an HTTP response is not a success, the
+//! client returns [`Error::Api`]. This error contains an [`ApiError`] with the
+//! status, error code, message, hint, documentation URL, and the decoded
+//! response body. The client decodes the JSON error envelope. It also decodes
+//! the `application/problem+json` documents that profile-insight requests
+//! return.
 //!
 //! ```no_run
 //! # async fn run() {
